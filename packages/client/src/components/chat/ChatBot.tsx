@@ -1,10 +1,11 @@
 import axios from 'axios';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { RiTelegram2Fill } from 'react-icons/ri';
-import ReactMarkDown from 'react-markdown';
 import { Button } from '../ui/button';
-import { useEffect, useRef, useState } from 'react';
+import type { Message } from './Chats';
 import TypingIndicator from './TypingIndicator';
+import Chats from './Chats';
 
 type FormData = {
    prompt: string;
@@ -14,22 +15,12 @@ type ChatResponse = {
    message: string;
 };
 
-type Message = {
-   role: 'user' | 'bot';
-   content: string;
-};
-
 const ChatBot = () => {
    const [messages, setMessages] = useState<Message[]>([]);
    const [isTyping, setIsTyping] = useState(false);
    const [error, setError] = useState('');
-   const lastMessageRef = useRef<HTMLDivElement | null>(null);
    const chatId = useRef(crypto.randomUUID());
    const { register, handleSubmit, reset, formState } = useForm<FormData>();
-
-   useEffect(() => {
-      lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
-   }, [messages]);
 
    const onSubmit = async ({ prompt }: FormData) => {
       try {
@@ -61,29 +52,10 @@ const ChatBot = () => {
       }
    };
 
-   const onCopyHandler = (e: React.ClipboardEvent) => {
-      const selection = window.getSelection()?.toString().trim();
-      if (selection) {
-         e.preventDefault();
-         e.clipboardData.setData('text/plain', selection);
-      }
-   };
-
    return (
       <div className="flex flex-col h-full">
          <div className="flex flex-col flex-1 gap-4 mb-10 overflow-y-auto">
-            {messages.map((message, index) => (
-               <div
-                  key={index}
-                  ref={index === messages.length - 1 ? lastMessageRef : null}
-                  onCopy={onCopyHandler}
-                  className={`
-                     px-3 py-1 rounded-4xl
-                     ${message.role === 'user' ? 'bg-indigo-500 text-white self-end' : 'bg-slate-200 text-slate-900 self-start'}`}
-               >
-                  <ReactMarkDown>{message.content}</ReactMarkDown>
-               </div>
-            ))}
+            <Chats messages={messages} />
             {isTyping && <TypingIndicator />}
             {error && <p className="text-red-500">{error}</p>}
          </div>
