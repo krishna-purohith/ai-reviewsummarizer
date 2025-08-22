@@ -2,8 +2,9 @@ import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { RiTelegram2Fill } from 'react-icons/ri';
 import ReactMarkDown from 'react-markdown';
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 import { useEffect, useRef, useState } from 'react';
+import TypingIndicator from './TypingIndicator';
 
 type FormData = {
    prompt: string;
@@ -67,6 +68,7 @@ const ChatBot = () => {
          e.clipboardData.setData('text/plain', selection);
       }
    };
+
    return (
       <div className="flex flex-col h-full">
          <div className="flex flex-col flex-1 gap-4 mb-10 overflow-y-auto">
@@ -82,13 +84,7 @@ const ChatBot = () => {
                   <ReactMarkDown>{message.content}</ReactMarkDown>
                </div>
             ))}
-            {isTyping && (
-               <div className="flex gap-1 px-3 py-3 bg-gray-100 self-start rounded-xl">
-                  <div className="w-2 h-2 rounded-full bg-gray-800 animate-pulse"></div>
-                  <div className="w-2 h-2 rounded-full bg-gray-800 animate-pulse [animation-delay:0.2s]"></div>
-                  <div className="w-2 h-2 rounded-full bg-gray-800 animate-pulse [animate-delay:0.4s]"></div>
-               </div>
-            )}
+            {isTyping && <TypingIndicator />}
             {error && <p className="text-red-500">{error}</p>}
          </div>
          <form
