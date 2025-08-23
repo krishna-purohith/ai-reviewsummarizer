@@ -20,6 +20,7 @@ export const chatController = {
 
       try {
          const { prompt, chatId } = req.body;
+
          const response = await chatService.sendMessage(prompt, chatId);
 
          res.json({
