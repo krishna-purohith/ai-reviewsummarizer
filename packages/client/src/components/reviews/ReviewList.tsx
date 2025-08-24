@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import Skeleton from 'react-loading-skeleton';
 import StarIcon from './StarIcon';
 
 type Props = {
@@ -21,17 +22,34 @@ type GetReviewsResponse = {
 
 const ReviewList = ({ productId }: Props) => {
    const [reviewData, setReviewData] = useState<GetReviewsResponse>();
+   const [isLoading, setIsLoading] = useState(false);
 
    const fetchReviews = async () => {
+      setIsLoading(true);
       const { data } = await axios.get<GetReviewsResponse>(
          `/api/products/${productId}/reviews`
       );
       setReviewData(data);
+      setIsLoading(false);
    };
 
    useEffect(() => {
       fetchReviews();
    }, []);
+
+   if (isLoading) {
+      return (
+         <div className="flex flex-col gap-6">
+            {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+               <div key={i}>
+                  <Skeleton width={130} />
+                  <Skeleton width={90} />
+                  <Skeleton count={2} />
+               </div>
+            ))}
+         </div>
+      );
+   }
 
    return (
       <div className="flex flex-col gap-6">
