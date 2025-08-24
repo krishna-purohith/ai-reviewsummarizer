@@ -11,13 +11,18 @@ export const reviewController = {
          res.status(400).json({ error: 'Invalid Product ID.' });
          return;
       }
-      try {
-         const reviews = await reviewService.getReviews(productId);
 
-         res.json(reviews);
-      } catch (error) {
-         res.status(500).json({ error: 'Internal server occured. Try again!' });
+      const product = await productRepository.getProduct(productId);
+      if (!product) {
+         res.status(400).json({ error: 'Product doesnot exist.' });
       }
+
+      const reviews = await reviewRepository.getReviews(productId);
+      const summary = await reviewRepository.getSummary(productId);
+
+      res.json({ reviews, summary });
+
+      res.status(500).json({ error: 'Internal server occured. Try again!' });
    },
 
    async summarizeReviews(req: Request, res: Response) {
