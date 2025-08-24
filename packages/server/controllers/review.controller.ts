@@ -1,5 +1,7 @@
 import type { Request, Response } from 'express';
+import { productRepository } from '../repositories/product.repository';
 import { reviewService } from '../services/review.service';
+import { reviewRepository } from '../repositories/review.repository';
 
 export const reviewController = {
    async getReviews(req: Request, res: Response) {
@@ -23,6 +25,21 @@ export const reviewController = {
 
       if (isNaN(productId)) {
          res.status(400).json({ error: 'Invalid product Id.' });
+         return;
+      }
+
+      const product = await productRepository.getProduct(productId);
+      if (!product) {
+         res.status(400).json({ error: 'Enter a valid product Id.' });
+         return;
+      }
+
+      const productReviews = await reviewRepository.getReviews(productId, 1);
+
+      if (!productReviews.length) {
+         res.status(400).json({
+            message: "The product doesn't have any reviews yet!!",
+         });
          return;
       }
 
