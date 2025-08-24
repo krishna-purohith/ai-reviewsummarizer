@@ -9,21 +9,25 @@ export const reviewService = {
    },
 
    async summarizeReviews(productId: number): Promise<string> {
+      const existingSummary = await reviewRepository.getSummary(productId);
+      if (existingSummary && existingSummary.ExpiresAt > new Date())
+         return existingSummary.content;
+
       const reviews = await reviewRepository.getReviews(productId, 10);
 
       const combinedReviews = reviews.map((r) => r.content).join('\n\n');
 
       const prompt = template.replace('{{reviews}}', combinedReviews);
 
-      const response = await llmClient.callLLM({
+      const { llmOutput } = await llmClient.callLLM({
          model: 'gpt-4o-mini',
          prompt,
          temperature: 0.2,
          maxTokens: 300,
       });
 
-      reviewRepository.storeSummary(productId, response.llmOutput);
+      reviewRepository.storeSummary(productId, llmOutput);
 
-      return response.llmOutput;
+      return llmOutput;
    },
 };
