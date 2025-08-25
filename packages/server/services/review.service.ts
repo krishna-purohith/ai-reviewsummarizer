@@ -13,12 +13,14 @@ export const reviewService = {
 
       const prompt = template.replace('{{reviews}}', combinedReviews);
 
-      const { llmOutput } = await llmClient.callLLM({
-         model: 'gpt-4o-mini',
-         prompt,
-         temperature: 0.2,
-         maxTokens: 300,
-      });
+      // const { llmOutput } = await llmClient.callLLM({
+      //    model: 'gpt-4o-mini',
+      //    prompt,
+      //    temperature: 0.2,
+      //    maxTokens: 300,
+      // });
+
+      const llmOutput = await llmClient.callOpenllm(prompt);
 
       reviewRepository.storeSummary(productId, llmOutput);
 
