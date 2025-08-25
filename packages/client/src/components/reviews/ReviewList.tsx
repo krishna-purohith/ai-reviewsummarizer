@@ -2,9 +2,8 @@ import axios from 'axios';
 import Skeleton from 'react-loading-skeleton';
 import StarIcon from './StarIcon';
 import { IoSparklesSharp } from 'react-icons/io5';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '../ui/button';
-import { useState } from 'react';
 import ReviewSkeleton from './ReviewSkeletion';
 
 type Props = {
@@ -29,9 +28,6 @@ type GetReviewsResponse = {
 };
 
 const ReviewList = ({ productId }: Props) => {
-   const [summary, setSummary] = useState('');
-   const [isSummaryLoading, setIsSummaryLoading] = useState(false);
-   const [summaryError, setSummaryError] = useState('');
    const {
       data: reviewData,
       isLoading,
@@ -41,6 +37,15 @@ const ReviewList = ({ productId }: Props) => {
       queryFn: () => fetchReviews(),
    });
 
+   const {
+      data: summarizeResponse,
+      mutate: handleSummarize,
+      isPending: isSummaryLoading,
+      isError: isSummaryError,
+   } = useMutation<SummarizeResponse>({
+      mutationFn: () => summarizeReviews(),
+   });
+
    const fetchReviews = async () => {
       const { data } = await axios.get<GetReviewsResponse>(
          `/api/products/${productId}/reviews`
@@ -48,20 +53,11 @@ const ReviewList = ({ productId }: Props) => {
       return data;
    };
 
-   const handleSummarize = async () => {
-      try {
-         setIsSummaryLoading(true);
-         setSummaryError('');
-         const { data } = await axios.post<SummarizeResponse>(
-            `/api/products/${productId}/reviews/summarize`
-         );
-         setSummary(data.summary);
-      } catch (error) {
-         console.log(error);
-         setSummaryError('Could not load summary. try again!');
-      } finally {
-         setIsSummaryLoading(false);
-      }
+   const summarizeReviews = async () => {
+      const { data } = await axios.post<SummarizeResponse>(
+         `/api/products/${productId}/reviews/summarize`
+      );
+      return data;
    };
 
    if (isLoading) {
@@ -88,7 +84,7 @@ const ReviewList = ({ productId }: Props) => {
       return null;
    }
 
-   const currentSummary = reviewData.summary || summary;
+   const currentSummary = reviewData.summary || summarizeResponse?.summary;
 
    return (
       <div>
@@ -101,7 +97,7 @@ const ReviewList = ({ productId }: Props) => {
             ) : (
                <div>
                   <Button
-                     onClick={handleSummarize}
+                     onClick={() => handleSummarize()}
                      className="cursor-pointer"
                      disabled={isSummaryLoading}
                   >
@@ -109,8 +105,10 @@ const ReviewList = ({ productId }: Props) => {
                      Summarize
                   </Button>
                   {isSummaryLoading && <ReviewSkeleton />}
-                  {summaryError && (
-                     <p className="text-red-500">{summaryError}</p>
+                  {isSummaryError && (
+                     <p className="text-red-500">
+                        'Could not load summary, try again!'
+                     </p>
                   )}
                </div>
             )}
