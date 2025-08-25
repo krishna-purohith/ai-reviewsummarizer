@@ -5,6 +5,7 @@ import { IoSparklesSharp } from 'react-icons/io5';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { useState } from 'react';
+import ReviewSkeleton from './ReviewSkeletion';
 
 type Props = {
    productId: number;
@@ -29,6 +30,7 @@ type GetReviewsResponse = {
 
 const ReviewList = ({ productId }: Props) => {
    const [summary, setSummary] = useState('');
+   const [isSummaryLoading, setIsSummaryLoading] = useState(false);
    const {
       data: reviewData,
       isLoading,
@@ -46,10 +48,14 @@ const ReviewList = ({ productId }: Props) => {
    };
 
    const handleSummarize = async () => {
+      setIsSummaryLoading(true);
+
       const { data } = await axios.post<SummarizeResponse>(
          `/api/products/${productId}/reviews/summarize`
       );
+
       setSummary(data.summary);
+      setIsSummaryLoading(false);
    };
 
    if (isLoading) {
@@ -82,12 +88,22 @@ const ReviewList = ({ productId }: Props) => {
       <div>
          <div className="mb-5">
             {currentSummary ? (
-               <p>{currentSummary}</p>
+               <p>
+                  <span className="font-semibold">Summary: </span>
+                  {currentSummary}
+               </p>
             ) : (
-               <Button onClick={handleSummarize}>
-                  <IoSparklesSharp />
-                  Summarize
-               </Button>
+               <div>
+                  <Button
+                     onClick={handleSummarize}
+                     className="cursor-pointer"
+                     disabled={isSummaryLoading}
+                  >
+                     <IoSparklesSharp />
+                     Summarize
+                  </Button>
+                  {isSummaryLoading && <ReviewSkeleton />}
+               </div>
             )}
          </div>
          <div className="flex flex-col gap-6">
