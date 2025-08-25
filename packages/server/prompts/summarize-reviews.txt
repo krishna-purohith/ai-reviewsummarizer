@@ -1,4 +1,0 @@
-Summarize all the below reviews of the product into a short paragraph highlighting key themes, both positive and negative.
-
-{{reviews}}
-         

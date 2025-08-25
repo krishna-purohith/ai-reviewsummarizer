@@ -21,8 +21,6 @@ export const reviewController = {
       const summary = await reviewRepository.getSummary(productId);
 
       res.json({ reviews, summary });
-
-      res.status(500).json({ error: 'Internal server occured. Try again!' });
    },
 
    async summarizeReviews(req: Request, res: Response) {

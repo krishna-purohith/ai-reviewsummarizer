@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 const openAIClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 import { InferenceClient } from '@huggingface/inference';
 const inferenceClient = new InferenceClient(process.env.HF_TOKEN);
+import summarizeInstructionPrompt from '../llm/prompts/summarize-reviews.txt';
 
 type llmOutputType = {
    id: string;
@@ -38,12 +39,21 @@ export const llmClient = {
       return { id: response.id, llmOutput: response.output_text };
    },
 
-   async callOpenllm(textToSummarize: string) {
-      const output = await inferenceClient.summarization({
-         model: 'facebook/bart-large-cnn',
-         inputs: textToSummarize,
-         provider: 'hf-inference',
+   async summarizeUsingOpenModels(reviewsToSummarize: string) {
+      const chatCompletion = await inferenceClient.chatCompletion({
+         provider: 'sambanova',
+         model: 'meta-llama/Llama-3.1-8B-Instruct',
+         messages: [
+            {
+               role: 'system',
+               content: summarizeInstructionPrompt,
+            },
+            {
+               role: 'user',
+               content: reviewsToSummarize,
+            },
+         ],
       });
-      return output.summary_text;
+      return chatCompletion.choices[0]?.message.content || '';
    },
 };
